@@ -30,7 +30,7 @@ func main() {
 	}
 	//log.Println("The html is: ", string(bs)) // was commented because it was really really unreadable
 	prefix := bytes.Index(bs, []byte(".config = ")) + len([]byte(".config = ")) // After doing some debugging regarding the youtube scripts and a nice stack overflow post :)
-	postfix := bytes.Index(bs,[]byte(";ytplayer.load"))
+	postfix := bytes.Index(bs, []byte(";ytplayer.load"))
 	between := bs[prefix:postfix]
 	log.Println("The config (in json) is:", string(between))
 	var parsedargs map[string]interface{}
@@ -42,16 +42,32 @@ func main() {
 	log.Println("Final args:", cfgargs)
 	adaptiveFmts := cfgargs["adaptive_fmts"]
 	log.Println("adaptive_fmts:", adaptiveFmts)
-	adptfmts := strings.Split(adaptiveFmts.(string), "&")
-	for _, v := range adptfmts {
-		if strings.HasPrefix(v, "url=") {
-			ulr, err := url.PathUnescape(v[4:])
-			if err != nil {
-				panic(fmt.Sprintln("There shouldn't be an error unescaping the url: ", err))
-			}
-			log.Println("final url:", ulr)
-			break
+	for _, fmts := range strings.Split(adaptiveFmts.(string), ",") {
+		//adptfmts := strings.Split(fmts.(string), "&")
+		//for _, v := range adptfmts {
+		//	log.Print(strings.Split(v, "=")[0])
+		//	if strings.HasPrefix(v, "url=") {
+		//		ulr, err := url.PathUnescape(v[4:])
+		//		if err != nil {
+		//			panic(fmt.Sprintln("There shouldn't be an error unescaping the url: ", err))
+		//		}
+		//		log.Println("", ulr)
+		//		break
+		//	} else {
+		//		log.Println("", strings.Split(v, "=")[1])
+		//	}
+		//}
+		rfmt, err := url.ParseQuery(fmts)
+		if err != nil {
+			panic(fmt.Sprintln("There shouldn't be an error parsing the json: ", err))
 		}
+		for k, tag := range rfmt {
+			log.Println(k, "=", tag)
+		}
+		log.Println()
 	}
+
+	log.Println("\nOther Formats:")
+	log.Println(cfgargs["formats"])
 
 }
